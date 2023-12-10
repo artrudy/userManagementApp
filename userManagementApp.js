@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs = require("fs");
 var readline = require("readline");
@@ -69,7 +80,7 @@ function readUserData(filePath, userId) {
         var existingUsers = JSON.parse(fileContent);
         var dataToDisplay = existingUsers.find(function (it) { return it.id === userId; });
         if (dataToDisplay) {
-            //   console.log("\nUser Details:");
+            console.log("\nUser Details:");
             console.log("ID: ".concat(dataToDisplay.id));
             console.log("First Name: ".concat(dataToDisplay.firstName));
             console.log("Last Name: ".concat(dataToDisplay.lastName));
@@ -78,6 +89,24 @@ function readUserData(filePath, userId) {
     }
     catch (error) {
         console.error("Error parsing JSON data:", error.message);
+    }
+}
+function updateUserData(filePath, userId, updatedFields) {
+    try {
+        var fileContent = fs.readFileSync(filePath, "utf-8");
+        var existingUsers = JSON.parse(fileContent);
+        var userIndex = existingUsers.findIndex(function (it) { return it.id === userId; });
+        if (userIndex !== -1) {
+            existingUsers[userIndex] = __assign(__assign({}, existingUsers[userIndex]), updatedFields);
+            fs.writeFileSync(filePath, JSON.stringify(existingUsers, null, 2), "utf8");
+            console.log("User with ID ".concat(userId, " updated successfully."));
+        }
+        else {
+            console.log("User with ID ".concat(userId, " not found."));
+        }
+    }
+    catch (error) {
+        console.error("Error parsing or writing JSON data:", error.message);
     }
 }
 yargs.command({
@@ -102,6 +131,33 @@ yargs.command({
     handler: function (argv) {
         var userId = parseInt(argv.userId, 10);
         readUserData(usersFilePath, userId);
+    },
+});
+yargs.command({
+    command: "update <userId>",
+    describe: "Update user data according to ID",
+    builder: {
+        firstName: {
+            describe: "New first name",
+            type: "string",
+        },
+        lastName: {
+            describe: "New last name",
+            type: "string",
+        },
+        phoneNumber: {
+            describe: "New phone number",
+            type: "string",
+        },
+    },
+    handler: function (argv) {
+        var userId = parseInt(argv.userId, 10);
+        var updatedFields = {
+            firstName: argv.firstName,
+            lastName: argv.lastName,
+            phoneNumber: argv.phoneNumber,
+        };
+        updateUserData(usersFilePath, userId, updatedFields);
     },
 });
 yargs.parse();

@@ -110,6 +110,42 @@ function readUserData(filePath: string, userId: number): void {
   }
 }
 
+function updateUserData(
+  filePath: string,
+  userId: number,
+  updatedFields: Partial<UserDetails>
+): void {
+  try {
+    const fileContent = fs.readFileSync(filePath, "utf-8");
+
+    const existingUsers: UserDetails[] = JSON.parse(fileContent);
+
+    const userIndex = existingUsers.findIndex((it) => it.id === userId);
+
+    if (userIndex !== -1) {
+      existingUsers[userIndex] = {
+        ...existingUsers[userIndex],
+        ...updatedFields,
+      };
+
+      fs.writeFileSync(
+        filePath,
+        JSON.stringify(existingUsers, null, 2),
+        "utf8"
+      );
+
+      console.log(`User with ID ${userId} updated successfully.`);
+    } else {
+      console.log(`User with ID ${userId} not found.`);
+    }
+  } catch (error) {
+    console.error(
+      "Error parsing or writing JSON data:",
+      (error as Error).message
+    );
+  }
+}
+
 yargs.command({
   command: "list",
   describe: "Show a list of user IDs",
@@ -134,6 +170,35 @@ yargs.command({
   handler: (argv) => {
     const userId = parseInt(argv.userId, 10);
     readUserData(usersFilePath, userId);
+  },
+});
+
+yargs.command({
+  command: "update <userId>",
+  describe: "Update user data according to ID",
+  builder: {
+    firstName: {
+      describe: "New first name",
+      type: "string",
+    },
+    lastName: {
+      describe: "New last name",
+      type: "string",
+    },
+    phoneNumber: {
+      describe: "New phone number",
+      type: "string",
+    },
+  },
+  handler: (argv) => {
+    const userId = parseInt(argv.userId, 10);
+    const updatedFields: Partial<UserDetails> = {
+      firstName: argv.firstName as string | undefined,
+      lastName: argv.lastName as string | undefined,
+      phoneNumber: argv.phoneNumber as string | undefined,
+    };
+
+    updateUserData(usersFilePath, userId, updatedFields);
   },
 });
 
