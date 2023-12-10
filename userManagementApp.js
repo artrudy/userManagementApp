@@ -91,6 +91,24 @@ function readUserData(filePath, userId) {
         console.error("Error parsing JSON data:", error.message);
     }
 }
+function deleteUser(filePath, userId) {
+    try {
+        var fileContent = fs.readFileSync(filePath, "utf-8");
+        var existingUsers = JSON.parse(fileContent);
+        var indexOfUserToDelete = existingUsers.findIndex(function (it) { return it.id === userId; });
+        if (indexOfUserToDelete !== -1) {
+            existingUsers.splice(indexOfUserToDelete, 1);
+            console.log("User whith ID ".concat(userId, " was deleted"));
+            fs.writeFileSync(filePath, JSON.stringify(existingUsers, null, 2), "utf8");
+        }
+        else {
+            console.log("User whith ID ".concat(userId, " not found"));
+        }
+    }
+    catch (error) {
+        console.error("Error parsing or writing JSON data:", error.message);
+    }
+}
 function updateUserData(filePath, userId, updatedFields) {
     try {
         var fileContent = fs.readFileSync(filePath, "utf-8");
@@ -158,6 +176,14 @@ yargs.command({
             phoneNumber: argv.phoneNumber,
         };
         updateUserData(usersFilePath, userId, updatedFields);
+    },
+});
+yargs.command({
+    command: "delete <userId>",
+    describe: "Delete user according to ID",
+    handler: function (argv) {
+        var userId = parseInt(argv.userId, 10);
+        deleteUser(usersFilePath, userId);
     },
 });
 yargs.parse();

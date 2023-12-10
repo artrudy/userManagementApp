@@ -110,6 +110,36 @@ function readUserData(filePath: string, userId: number): void {
   }
 }
 
+function deleteUser(filePath: string, userId: number): void {
+  try {
+    const fileContent = fs.readFileSync(filePath, "utf-8");
+
+    const existingUsers: UserDetails[] = JSON.parse(fileContent);
+
+    const indexOfUserToDelete = existingUsers.findIndex(
+      (it) => it.id === userId
+    );
+    if (indexOfUserToDelete !== -1) {
+      existingUsers.splice(indexOfUserToDelete, 1);
+
+      console.log(`User whith ID ${userId} was deleted`);
+
+      fs.writeFileSync(
+        filePath,
+        JSON.stringify(existingUsers, null, 2),
+        "utf8"
+      );
+    } else {
+      console.log(`User whith ID ${userId} not found`);
+    }
+  } catch (error) {
+    console.error(
+      "Error parsing or writing JSON data:",
+      (error as Error).message
+    );
+  }
+}
+
 function updateUserData(
   filePath: string,
   userId: number,
@@ -199,6 +229,15 @@ yargs.command({
     };
 
     updateUserData(usersFilePath, userId, updatedFields);
+  },
+});
+
+yargs.command({
+  command: "delete <userId>",
+  describe: "Delete user according to ID",
+  handler: (argv) => {
+    const userId = parseInt(argv.userId, 10);
+    deleteUser(usersFilePath, userId);
   },
 });
 
