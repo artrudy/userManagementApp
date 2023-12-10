@@ -63,6 +63,23 @@ function showUserIds() {
         console.error("Error parsing JSON data:", error.message);
     }
 }
+function readUserData(filePath, userId) {
+    try {
+        var fileContent = fs.readFileSync(filePath, "utf-8");
+        var existingUsers = JSON.parse(fileContent);
+        var dataToDisplay = existingUsers.find(function (it) { return it.id === userId; });
+        if (dataToDisplay) {
+            //   console.log("\nUser Details:");
+            console.log("ID: ".concat(dataToDisplay.id));
+            console.log("First Name: ".concat(dataToDisplay.firstName));
+            console.log("Last Name: ".concat(dataToDisplay.lastName));
+            console.log("Phone Number: ".concat(dataToDisplay.phoneNumber || "Not provided"));
+        }
+    }
+    catch (error) {
+        console.error("Error parsing JSON data:", error.message);
+    }
+}
 yargs.command({
     command: "list",
     describe: "Show a list of user IDs",
@@ -77,6 +94,14 @@ yargs.command({
         getUserDetails(function (userDetails) {
             saveUsersToFile(usersFilePath, [userDetails]);
         });
+    },
+});
+yargs.command({
+    command: "read <userId>",
+    describe: "Read user data according to ID",
+    handler: function (argv) {
+        var userId = parseInt(argv.userId, 10);
+        readUserData(usersFilePath, userId);
     },
 });
 yargs.parse();

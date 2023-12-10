@@ -89,6 +89,27 @@ function showUserIds(): void {
   }
 }
 
+function readUserData(filePath: string, userId: number): void {
+  try {
+    const fileContent = fs.readFileSync(filePath, "utf-8");
+
+    const existingUsers: UserDetails[] = JSON.parse(fileContent);
+
+    const dataToDisplay = existingUsers.find((it) => it.id === userId);
+    if (dataToDisplay) {
+      console.log("\nUser Details:");
+      console.log(`ID: ${dataToDisplay.id}`);
+      console.log(`First Name: ${dataToDisplay.firstName}`);
+      console.log(`Last Name: ${dataToDisplay.lastName}`);
+      console.log(
+        `Phone Number: ${dataToDisplay.phoneNumber || "Not provided"}`
+      );
+    }
+  } catch (error) {
+    console.error("Error parsing JSON data:", (error as Error).message);
+  }
+}
+
 yargs.command({
   command: "list",
   describe: "Show a list of user IDs",
@@ -104,6 +125,15 @@ yargs.command({
     getUserDetails((userDetails: UserDetails) => {
       saveUsersToFile(usersFilePath, [userDetails]);
     });
+  },
+});
+
+yargs.command({
+  command: "read <userId>",
+  describe: "Read user data according to ID",
+  handler: (argv) => {
+    const userId = parseInt(argv.userId, 10);
+    readUserData(usersFilePath, userId);
   },
 });
 
