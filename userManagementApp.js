@@ -70,4 +70,13 @@ yargs.command({
         showUserIds();
     },
 });
+yargs.command({
+    command: "create",
+    describe: "Create a new user",
+    handler: function () {
+        getUserDetails(function (userDetails) {
+            saveUsersToFile(usersFilePath, [userDetails]);
+        });
+    },
+});
 yargs.parse();

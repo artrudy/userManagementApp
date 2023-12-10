@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as readline from "readline";
 import * as path from "path";
 import * as yargs from "yargs";
+import { create } from "ts-node";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -93,6 +94,16 @@ yargs.command({
   describe: "Show a list of user IDs",
   handler: () => {
     showUserIds();
+  },
+});
+
+yargs.command({
+  command: "create",
+  describe: "Create a new user",
+  handler: () => {
+    getUserDetails((userDetails: UserDetails) => {
+      saveUsersToFile(usersFilePath, [userDetails]);
+    });
   },
 });
 
