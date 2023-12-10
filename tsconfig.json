@@ -7,6 +7,8 @@
     "strictNullChecks": true,
     "noImplicitAny": true,
     "useUnknownInCatchVariables": true,
+    "types": ["node", "@types/yargs"],
+
     "esModuleInterop": true
   },
   "include": ["./*.ts"]

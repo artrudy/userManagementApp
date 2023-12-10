@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var fs = require("fs");
 var readline = require("readline");
 var path = require("path");
+var yargs = require("yargs");
 var rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -35,10 +36,38 @@ getUserDetails(function (userDetails) {
     console.log(users);
     saveUsersToFile("users.txt", users);
 });
-function saveUsersToFile(fileName, data) {
+var usersFilePath = path.join(__dirname, "users.txt");
+function saveUsersToFile(filePath, users) {
     var currentDirectory = __dirname;
-    var filePath = path.join(currentDirectory, fileName);
-    var jsonData = JSON.stringify(data, null, 2);
-    fs.writeFileSync(filePath, jsonData, { encoding: "utf8" });
-    console.log("Data saved to ".concat(filePath));
+    try {
+        var fileContent = fs.readFileSync(filePath, "utf8");
+        var existingUsers = JSON.parse(fileContent);
+        existingUsers.push.apply(existingUsers, users);
+        fs.writeFileSync(filePath, JSON.stringify(existingUsers, null, 2), "utf8");
+        console.log("Users added and data saved to ".concat(filePath));
+    }
+    catch (error) {
+        console.error("Error reading or writing to the file:", error.message);
+    }
 }
+function showUserIds() {
+    var fileContent = fs.readFileSync(usersFilePath, "utf8");
+    try {
+        var usersData = JSON.parse(fileContent);
+        console.log("\nList of User IDs:");
+        usersData.forEach(function (user) {
+            console.log("User ID: ".concat(user.id));
+        });
+    }
+    catch (error) {
+        console.error("Error parsing JSON data:", error.message);
+    }
+}
+yargs.command({
+    command: "list",
+    describe: "Show a list of user IDs",
+    handler: function () {
+        showUserIds();
+    },
+});
+yargs.parse();

@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as readline from "readline";
 import * as path from "path";
+import * as yargs from "yargs";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -53,14 +54,46 @@ getUserDetails((userDetails: UserDetails) => {
   saveUsersToFile("users.txt", users);
 });
 
-function saveUsersToFile(fileName: string, data: any): void {
+const usersFilePath = path.join(__dirname, "users.txt");
+
+function saveUsersToFile(filePath: string, users: UserDetails[]): void {
   const currentDirectory = __dirname;
 
-  const filePath = path.join(currentDirectory, fileName);
+  try {
+    const fileContent = fs.readFileSync(filePath, "utf8");
 
-  const jsonData = JSON.stringify(data, null, 2);
+    const existingUsers: UserDetails[] = JSON.parse(fileContent);
 
-  fs.writeFileSync(filePath, jsonData, { encoding: "utf8" });
+    existingUsers.push(...users);
 
-  console.log(`Data saved to ${filePath}`);
+    fs.writeFileSync(filePath, JSON.stringify(existingUsers, null, 2), "utf8");
+    console.log(`Users added and data saved to ${filePath}`);
+  } catch (error: any) {
+    console.error("Error reading or writing to the file:", error.message);
+  }
 }
+
+function showUserIds(): void {
+  const fileContent = fs.readFileSync(usersFilePath, "utf8");
+
+  try {
+    const usersData: UserDetails[] = JSON.parse(fileContent);
+
+    console.log("\nList of User IDs:");
+    usersData.forEach((user: UserDetails) => {
+      console.log(`User ID: ${user.id}`);
+    });
+  } catch (error) {
+    console.error("Error parsing JSON data:", (error as Error).message);
+  }
+}
+
+yargs.command({
+  command: "list",
+  describe: "Show a list of user IDs",
+  handler: () => {
+    showUserIds();
+  },
+});
+
+yargs.parse();
